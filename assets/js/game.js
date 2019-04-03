@@ -1,9 +1,9 @@
 var game;
 window.onload = function () {
 	var gameConfig = {
-		width:                  480,
-		height:                 640,
-		backgroundColor:        0xff0000,
+		width:                  900,
+		height:                 900,
+		backgroundColor:        0xecf0f1,
 		scene: [ bootGame, playGame ]
 	};
 	
@@ -17,6 +17,9 @@ class bootGame extends Phaser.Scene {
 	constructor() {
 		super( "BootGame" );
 	}
+	preload() {
+		this.load.image( "emptytile", "assets/images/emptytile.png" );
+	}
 	create() {
 		console.log( "Game is booting..." );
 		this.scene.start( "PlayGame" );
@@ -28,7 +31,12 @@ class playGame extends Phaser.Scene {
 		super( "PlayGame" );
 	}
 	create() {
-		console.log( "This is my awesome game" );
+		console.log( "This is my awesome game." );
+		for( var i = 0; i < 4; i++ ) {
+			for( var j = 0; j < 4; j++ ) {
+				this.add.image( 120 + j * 220, 120 + i * 220, "emptytile" );
+			}
+		}
 	}
 }
 
