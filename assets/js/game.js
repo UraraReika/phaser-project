@@ -5,8 +5,15 @@ var game,
 		boardSize: 	 {
 			rows: 4,
 			cols: 4
-		}
-	}
+		},
+		tweenSpeed: 2000
+	};
+
+const LEFT = 0;
+const RIGHT = 1;
+const UP = 2;
+const DOWN = 3;
+
 window.onload = function () {
 	var gameConfig = {
 		width:                  gameOptions.boardSize.cols * (gameOptions.tileSize + gameOptions.tileSpacing) + gameOptions.tileSpacing,
@@ -19,7 +26,7 @@ window.onload = function () {
 	window.focus();
 	resizeGame();
 	window.addEventListener("resize", resizeGame);
-}
+};
 
 class bootGame extends Phaser.Scene {
 	constructor() {
@@ -43,7 +50,9 @@ class playGame extends Phaser.Scene {
 		super( "PlayGame" );
 	}
 	create() {
+		this.canMove = false;
 		this.boardArray = [];
+		
 		console.log( "This is my awesome game." );
 		for( var i = 0; i < gameOptions.boardSize.rows; i++ ) {
 			this.boardArray[i] = [];
@@ -58,8 +67,12 @@ class playGame extends Phaser.Scene {
 				}
 			}
 		}
+		
 		this.addTile();
 		this.addTile();
+		
+		this.input.keyboard.on('keydown', this.handleKey, this);
+		this.input.on('pointerup', this.handleSwipe, this);
 	}
 
 	addTile() {
@@ -79,6 +92,17 @@ class playGame extends Phaser.Scene {
 			this.boardArray[chosenTile.row][chosenTile.col].tileValue = 1;
 			this.boardArray[chosenTile.row][chosenTile.col].tileSprite.visible = true;
 			this.boardArray[chosenTile.row][chosenTile.col].tileSprite.setFrame(0);
+			this.boardArray[chosenTile.row][chosenTile.col].tileSprite.alpha = 0;
+			this.tweens.add({
+				targets: [this.boardArray[chosenTile.row][chosenTile.col].tileSprite],
+				alpha: 1,
+				duration: gameOptions.tweenSpeed,
+				callbackScope: this,
+				onComplete: function () {
+					console.log('tween completed');
+					this.canMove = true;
+				}
+			});
 		}
 	}
 
@@ -87,6 +111,42 @@ class playGame extends Phaser.Scene {
 		    posY = gameOptions.tileSpacing * (row + 1) + gameOptions.tileSize * (row + 0.5);
 
 		return new Phaser.Geom.Point(posX, posY);
+	}
+	
+	handleKey(e) {
+		if (this.canMove) {
+			switch (e.code) {
+				case 'KeyA':
+				case 'ArrowLeft':
+					this.makeMove(LEFT);
+					break;
+				case 'KeyD':
+				case 'ArrowRight':
+					this.makeMove(RIGHT);
+					break;
+				case 'KeyW':
+				case 'ArrowUp':
+					this.makeMove(UP);
+					break;
+				case 'KeyS':
+				case 'ArrowDown':
+					this.makeMove(DOWN);
+					break;
+			}
+		}
+	}
+	
+	handleSwipe(e) {
+		var swipeTime = e.upTime - e.downTime,
+			swipe = new Phaser.Geom.Point(e.upX - e.downX, e.upY - e.downY);
+		
+		console.log('Movement time: ' + swipeTime + ' ms');
+		console.log('Horizontal distance: ' + swipe.x + ' pixels');
+		console.log('Vertical distance: ' + swipe.y + ' pixels');
+	}
+	
+	makeMove(d) {
+		console.log('about to move');
 	}
 
 }
@@ -105,4 +165,4 @@ function resizeGame() {
 		canvas.style.width = (windowHeight * gameRatio) + "px";
 		canvas.style.height = windowHeight + "px";
 	}
-} 
+}
