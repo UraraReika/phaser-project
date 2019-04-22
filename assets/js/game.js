@@ -6,7 +6,10 @@ var game,
 			rows: 4,
 			cols: 4
 		},
-		tweenSpeed: 2000
+		tweenSpeed: 2000,
+		swipeMaxTime: 1000,
+		swipeMinDistance: 20,
+		swipeMinNormal: 0.85
 	};
 
 const LEFT = 0;
@@ -137,12 +140,29 @@ class playGame extends Phaser.Scene {
 	}
 	
 	handleSwipe(e) {
-		var swipeTime = e.upTime - e.downTime,
-			swipe = new Phaser.Geom.Point(e.upX - e.downX, e.upY - e.downY);
+		if (this.canMove) {
+			var swipeTime = e.upTime - e.downTime,
+				fastEnough = swipeTime < gameOptions.swipeMaxTime,
+				swipe = new Phaser.Geom.Point(e.upX - e.downX, e.upY - e.downY),
+				swipeMagnitude = Phaser.Geom.Point.GetMagnitude(swipe),
+				longEnough = swipeMagnitude > gameOptions.swipeMinDistance;
+		}
 		
-		console.log('Movement time: ' + swipeTime + ' ms');
-		console.log('Horizontal distance: ' + swipe.x + ' pixels');
-		console.log('Vertical distance: ' + swipe.y + ' pixels');
+		if (longEnough && fastEnough) {
+			Phaser.Geom.Point.SetMagnitude(swipe, 1);
+			if (swipe.x > gameOptions.swipeMinNormal) {
+				this.makeMove(RIGHT);
+			}
+			if (swipe.x < -gameOptions.swipeMinNormal) {
+				this.makeMove(LEFT);
+			}
+			if (swipe.y > gameOptions.swipeMinNormal) {
+				this.makeMove(DOWN);
+			}
+			if (swipe.y < -gameOptions.swipeMinNormal) {
+				this.makeMove(UP);
+			}
+		}
 	}
 	
 	makeMove(d) {
