@@ -1,28 +1,28 @@
 var game,
 	gameOptions = {
-		tileSize: 	 200,
-		tileSpacing: 20,
-		boardSize: 	 {
+		tileSize: 	      200,
+		tileSpacing:      20,
+		boardSize:        {
 			rows: 4,
 			cols: 4
 		},
-		tweenSpeed: 2000,
-		swipeMaxTime: 1000,
+		tweenSpeed:       200,
+		swipeMaxTime:     1000,
 		swipeMinDistance: 20,
-		swipeMinNormal: 0.85
+		swipeMinNormal:   0.85
 	};
 
-const LEFT = 0;
+const LEFT  = 0;
 const RIGHT = 1;
-const UP = 2;
-const DOWN = 3;
+const UP    = 2;
+const DOWN  = 3;
 
 window.onload = function () {
 	var gameConfig = {
 		width:                  gameOptions.boardSize.cols * (gameOptions.tileSize + gameOptions.tileSpacing) + gameOptions.tileSpacing,
 		height:                 gameOptions.boardSize.rows * (gameOptions.tileSize + gameOptions.tileSpacing) + gameOptions.tileSpacing,
 		backgroundColor:        0xecf0f1,
-		scene: [ bootGame, playGame ]
+		scene:                  [ bootGame, playGame ]
 	};
 	
 	game = new Phaser.Game(gameConfig);
@@ -92,6 +92,7 @@ class playGame extends Phaser.Scene {
 		}
 		if (emptyTiles.length > 0) {
 			var chosenTile = Phaser.Utils.Array.GetRandom(emptyTiles);
+			
 			this.boardArray[chosenTile.row][chosenTile.col].tileValue = 1;
 			this.boardArray[chosenTile.row][chosenTile.col].tileSprite.visible = true;
 			this.boardArray[chosenTile.row][chosenTile.col].tileSprite.setFrame(0);
@@ -166,7 +167,25 @@ class playGame extends Phaser.Scene {
 	}
 	
 	makeMove(d) {
-		console.log('about to move');
+		var dRow = (d === LEFT || d === RIGHT) ? 0 : d === UP ? -1 : 1,
+			dCol = (d === UP || d === DOWN) ? 0 : d === LEFT ? -1 : 1;
+
+		this.canMove = false;
+
+		for (var i = 0; i < gameOptions.boardSize.rows; i++) {
+			for (var j = 0; j < gameOptions.boardSize.cols; j++) {
+				var curRow = dRow === 1 ? (gameOptions.boardSize.rows - 1) - i : i,
+					curCol = dCol === 1 ? (gameOptions.boardSize.cols - 1) - j : j,
+					tileValue = this.boardArray[curRow][curCol].tileValue;
+
+				if (tileValue !== 0) {
+					var newPos = this.getTilePosition(curRow + dRow, curCol + dCol);
+
+					this.boardArray[curRow][curCol].tileSprite.x = newPos.x;
+					this.boardArray[curRow][curCol].tileSprite.y = newPos.y;
+				}
+			}
+		}
 	}
 
 }
